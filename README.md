@@ -3,6 +3,8 @@ Accessible Parking Map for Paris
 
 This small android app is designed to display accessible parking in Paris based on open data from [Prefecture de Paris]. 
 
+Still under development at this point. 
+
 
 Google Maps Platform 101: Android Codelab
 =========================================
