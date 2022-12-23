@@ -18,9 +18,13 @@ import MarkerInfoWindowAdapter
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.alpha
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.codelabs.buildyourfirstmap.place.Place
 import com.google.codelabs.buildyourfirstmap.place.PlacesReader
@@ -42,6 +46,25 @@ class MainActivity : AppCompatActivity() {
             addMarkers(googleMap)
             // Set custom info window adapter
             googleMap.setInfoWindowAdapter(MarkerInfoWindowAdapter(this))
+            // Ensure all places are visible in the map.
+            googleMap.setOnMapLoadedCallback {
+                val bounds = LatLngBounds.builder()
+                places.forEach { bounds.include(it.latLng) }
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 20))
+            }
+
+            // When the camera starts moving, change the alpha value of the marker to translucent.
+            googleMap.setOnCameraMoveStartedListener {
+                for (marker in markers) {
+                    marker.alpha = 0.1f
+                }
+            }
+
+            googleMap.setOnCameraIdleListener {
+                for (marker in markers) {
+                    marker.alpha = 0.5f
+                }
+            }
         }
 
     }
@@ -51,6 +74,7 @@ class MainActivity : AppCompatActivity() {
         BitmapHelper.vectorToBitmap(this, R.drawable.ic_directions_bike_black_24dp, color)
     }
 
+    private val markers = mutableListOf<Marker>()
     /**
      * Adds marker representations of the places list on the provided GoogleMap object
      */
@@ -61,11 +85,12 @@ class MainActivity : AppCompatActivity() {
                     .title(place.name)
                     .position(place.latLng)
                     .icon(bicycleIcon)
+                    .alpha(0.5f)
             )
             // Set place as the tag on the marker object so it can be referenced within
             // MarkerInfoWindowAdapter
             marker.tag = place
-
+            markers.add(marker)
         }
     }
 }
